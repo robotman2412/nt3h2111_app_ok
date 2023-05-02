@@ -46,3 +46,6 @@
 [submodule "components/i2c-nt3h2111"]
 	path = components/i2c-nt3h2111
 	url = https://github.com/robotman2412/esp32-component-i2c-nt3h2111
+[submodule "components/simplendef"]
+	path = components/simplendef
+	url = https://robotman2412@github.com/robotman2412/simplendef.git
