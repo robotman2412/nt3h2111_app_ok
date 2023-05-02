@@ -9,6 +9,9 @@
 // native Badge apps on.
 
 #include "main.h"
+#include "nt3h2111.h"
+#include "ndef.h"
+#include "ndef_record_types.h"
 
 static pax_buf_t buf;
 xQueueHandle buttonQueue;
@@ -18,84 +21,53 @@ static const char *TAG = "mch2022-demo-app";
 
 // Updates the screen with the latest buffer.
 void disp_flush() {
-    ili9341_write(get_ili9341(), buf.buf);
+	ili9341_write(get_ili9341(), buf.buf);
 }
 
 // Exits the app, returning to the launcher.
 void exit_to_launcher() {
-    REG_WRITE(RTC_CNTL_STORE0_REG, 0);
-    esp_restart();
+	REG_WRITE(RTC_CNTL_STORE0_REG, 0);
+	esp_restart();
+}
+
+// Prints a simple hexdump.
+static void hexdump(const void *datas, size_t size) {
+	const size_t cols = 16;
+	const uint8_t *arr = datas;
+	for (size_t y = 0; y * cols < size; y++) {
+		for (uint_fast8_t x = 0; x < cols && x+y*cols < size; x++) {
+			if (x) putc(' ', stdout);
+			printf("%02x", arr[y*cols+x]);
+		}
+		putc('\n', stdout);
+	}
 }
 
 void app_main() {
-  
-    
-    ESP_LOGI(TAG, "Welcome to the template app!");
-
-    // Initialize the screen, the I2C and the SPI busses.
-    bsp_init();
-
-    // Initialize the RP2040 (responsible for buttons, etc).
-    bsp_rp2040_init();
-    
-    // This queue is used to receive button presses.
-    buttonQueue = get_rp2040()->queue;
-    
-    // Initialize graphics for the screen.
-    pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
-    
-    // Initialize NVS.
-    nvs_flash_init();
-    
-    // Initialize WiFi. This doesn't connect to Wifi yet.
-    wifi_init();
-    
-    while (1) {
-        // Pick a random background color.
-        int hue = esp_random() & 255;
-        pax_col_t col = pax_col_hsv(hue, 255 /*saturation*/, 255 /*brighness*/);
-        
-        // Greet the World in front of a random background color! 
-        // Fill the background with the random color.
-        pax_background(&buf, col);
-        
-        // This text is shown on screen.
-        char             *text = "Hello, MCH2022!";
-        
-        // Pick the font (Saira is the only one that looks nice in this size).
-        const pax_font_t *font = pax_font_saira_condensed;
-
-        // Determine how the text dimensions so we can display it centered on
-        // screen.
-        pax_vec1_t        dims = pax_text_size(font, font->default_size, text);
-
-        // Draw the centered text.
-        pax_draw_text(
-            &buf, // Buffer to draw to.
-            0xff000000, // color
-            font, font->default_size, // Font and size to use.
-            // Position (top left corner) of the app.
-            (buf.width  - dims.x) / 2.0,
-            (buf.height - dims.y) / 2.0,
-            // The text to be rendered.
-            text
-        );
-
-        // Draws the entire graphics buffer to the screen.
-        disp_flush();
-        
-        // Wait for button presses and do another cycle.
-        
-        // Structure used to receive data.
-        rp2040_input_message_t message;
-        
-        // Wait forever for a button press (because of portMAX_DELAY)
-        xQueueReceive(buttonQueue, &message, portMAX_DELAY);
-        
-        // Which button is currently pressed?
-        if (message.input == RP2040_INPUT_BUTTON_HOME && message.state) {
-            // If home is pressed, exit to launcher.
-            exit_to_launcher();
-        }
-    }
+	ESP_LOGI(TAG, "Welcome to the template app!");
+	
+	// Initialize the screen, the I2C and the SPI busses.
+	bsp_init();
+	
+	// Initialize the RP2040 (responsible for buttons, etc).
+	bsp_rp2040_init();
+	
+	// This queue is used to receive button presses.
+	buttonQueue = get_rp2040()->queue;
+	
+	// Initialize graphics for the screen.
+	pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
+	
+	// Initialize NVS.
+	nvs_flash_init();
+	
+	// Initialize WiFi. This doesn't connect to Wifi yet.
+	wifi_init();
+	
+	// Init some NFC TAG.
+	NT3H2111 tag;
+	nt3h2111_init(&tag, 0, 0x55);
+	
+	while (1) {
+	}
 }
