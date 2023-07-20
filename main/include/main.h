@@ -28,6 +28,13 @@
 // For exiting to the launcher.
 #include "soc/rtc.h"
 #include "soc/rtc_cntl_reg.h"
+// HaHa, NFC.
+#include <nt3h2111.h>
+#include <ndef.h>
+
+extern pax_buf_t buf;
+extern NT3H2111 tag;
+extern xQueueHandle buttonQueue;
 
 // Updates the screen with the last drawing.
 void disp_flush();

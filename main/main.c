@@ -12,8 +12,10 @@
 #include "nt3h2111.h"
 #include "ndef.h"
 #include "ndef_record_types.h"
+#include "ui.h"
 
-static pax_buf_t buf;
+pax_buf_t buf;
+NT3H2111 tag;
 xQueueHandle buttonQueue;
 
 #include <esp_log.h>
@@ -57,6 +59,7 @@ void app_main() {
 	
 	// Initialize graphics for the screen.
 	pax_buf_init(&buf, NULL, 320, 240, PAX_BUF_16_565RGB);
+	pax_enable_multicore(1);
 	
 	// Initialize NVS.
 	nvs_flash_init();
@@ -65,9 +68,13 @@ void app_main() {
 	wifi_init();
 	
 	// Init some NFC TAG.
-	NT3H2111 tag;
 	nt3h2111_init(&tag, 0, 0x55);
 	
 	while (1) {
+		menu_show_summary();
+		rp2040_input_message_t msg;
+		if (xQueueReceive(buttonQueue, &msg, portMAX_DELAY) && msg.state && msg.input == RP2040_INPUT_BUTTON_HOME) {
+			exit_to_launcher();
+		}
 	}
 }
